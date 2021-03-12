@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>AY mongo</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div>
+      <h4 class="center knowledge">Knowledge shared is knowledge squared.</h4>
+    </div>
+
+    <div class="loader"></div>
+    <div class="container">
+      <form>
+        <div class="row">
+          <div class="col s8">
+            <label>Enter adress</label>
+            <input type="text" id="adress" autofocus value="localhost" />
+          </div>
+          <div class="col s4">
+            <label>Enter port</label>
+            <input type="text" id="port" value="27017" />
+          </div>
+        </div>
+        <div>
+          <label>Enter db</label>
+          <input type="text" id="db" />
+        </div>
+        <div>
+          <label>Enter user</label>
+          <input type="text" id="user" />
+        </div>
+        <div>
+          <label>Enter pwd</label>
+          <input type="password" id="pwd" />
+        </div>
+        <div>
+          <div class="file-field input-field">
+            <div class="btn">
+              <span>JSON</span>
+              <input type="file" id="json" />
+            </div>
+            <div class="file-path-wrapper">
+              <input
+                class="file-path validate"
+                type="text"
+                placeholder="Upload one or more files"
+                id="jsonPath"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="populateBtn">
+          <button class="waves-effect waves-light btn btn-large" type="submit">
+            Populate
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      const electron = require("electron");
+      const { ipcRenderer } = electron;
+      let json;
+
+      document.querySelector("form").addEventListener("submit", submitForm);
+      document.querySelector("#json").addEventListener("change", (e) => {
+        document.querySelector("#jsonPath").value = e.target.files[0].path;
+      });
+
+      function submitForm(e) {
+        e.preventDefault();
+
+        document.querySelector(".loader").style.display = "block";
+        document.querySelector(".container").style.display = "none";
+
+        const adress = document.querySelector("#adress").value;
+        const port = document.querySelector("#port").value;
+        const db = document.querySelector("#db").value;
+        if (!db) return showErr("db name is required!");
+        const user = document.querySelector("#user").value;
+        const pwd = document.querySelector("#pwd").value;
+        const collection = document.getElementById("json").files.length
+          ? document.getElementById("json").files[0].name.split(".")[0]
+          : null;
+        const jsonPath = document.getElementById("json").files.length
+          ? document.getElementById("json").files[0].path
+          : null;
+
+        if (!collection || !jsonPath)
+          return showErr("insert a valid json yawdiiii!");
+
+        let url;
+        if (user && pwd)
+          url = `mongodb://${user}:${pwd}@${adress}:${port}/${db}?authSource=${db}`;
+        else url = `mongodb://${adress}:${port}/${db}`;
+
+        ipcRenderer.send("populate", { url, jsonPath, collection, db });
+
+        ipcRenderer.on("populate-reply", (event, arg) => {
+          console.log("arg : ", arg);
+          document.querySelector(".loader").style.display = "none";
+          document.querySelector(".container").style.display = "block";
+          if (arg.ok) {
+            document.querySelector(".knowledge").style.backgroundColor =
+              "green";
+            document.querySelector(".knowledge").innerHTML =
+              "documents inserted :D";
+          }
+          if (arg.err) {
+            if (arg.err.writeErrors)
+              return showErr(arg.err.writeErrors[0].err.errmsg);
+            return showErr(
+              `err code : ${arg.err.code}, err name : ${arg.err.codeName}`
+            );
+          }
+        });
+      }
+
+      const showErr = (msg) => {
+        document.querySelector(".loader").style.display = "none";
+        document.querySelector(".container").style.display = "block";
+
+        document.querySelector(".knowledge").style.backgroundColor = "red";
+        document.querySelector(".knowledge").innerHTML = msg;
+        return 0;
+      };
+    </script>
+  </body>
+</html>
