@@ -26,7 +26,7 @@ app.on("ready", function () {
       slashes: true,
     })
   );
-  mainWindow.webContents.toggleDevTools();
+  // mainWindow.webContents.toggleDevTools();
   // Quit app when closed
   mainWindow.on("closed", function () {
     app.quit();

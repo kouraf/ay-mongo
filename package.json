@@ -12,10 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "electron": "^1.7.6",
-    "mongodb": "^3.6.4",
-    "json2mongo": "^2.0.0"
+    "json2mongo": "^2.0.0",
+    "mongodb": "^3.6.4"
   },
   "devDependencies": {
-    "electron-packager": "^9.0.1"
+    "electron-packager": "^15.2.0"
   }
 }

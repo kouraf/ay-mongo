@@ -114,8 +114,12 @@
           if (arg.err) {
             if (arg.err.writeErrors)
               return showErr(arg.err.writeErrors[0].err.errmsg);
+            if (arg.err.codeName)
+              return showErr(
+                `err code : ${arg.err.code}, err name : ${arg.err.codeName}`
+              );
             return showErr(
-              `err code : ${arg.err.code}, err name : ${arg.err.codeName}`
+              "I don't know what, but something tlefhali, maybe it's not a valid JSON!"
             );
           }
         });
